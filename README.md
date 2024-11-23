@@ -14,15 +14,17 @@ Before you can use this database, ensure you have the following:
 If you haven’t already cloned the repository, run the following command:
 
 ```bash
-git clone https://github.com/your-username/your-repository.git
-cd your-repository
+git clone https://github.com/zaynabahmad/family_farmDB.git
+cd family_farmDB
 ```
 
 ### 2. database import
 
 ```bash
-mysql -u your-username -p your-database-name < schema-file.sql
+mysql -u root -p FamilyFarmDB < family_farmdb.sql
 ```
+* Replace root with your MySQL username if it's different.
+* Enter your MySQL password when prompted.
 
 ### 3. to show the DataBase
 
