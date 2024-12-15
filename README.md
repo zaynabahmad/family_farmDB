@@ -48,3 +48,11 @@ INSERT INTO Sensor_Reading_Fact (
 ```sql
 SELECT * FROM Sensor_Reading_Fact WHERE Timestamp BETWEEN '2024-11-01' AND '2024-11-23';
 ```
+
+
+### new data base 
+
+#### the query : new_db.sql 
+
+#### insert 
+*run the query insert_data.sql*
