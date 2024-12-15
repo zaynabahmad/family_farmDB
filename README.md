@@ -23,6 +23,7 @@ cd family_farmDB
 ```bash
 mysql -u root -p FamilyFarmDB < family_farmdb.sql
 ```
+
 * Replace root with your MySQL username if it's different.
 * Enter your MySQL password when prompted.
 
@@ -49,10 +50,12 @@ INSERT INTO Sensor_Reading_Fact (
 SELECT * FROM Sensor_Reading_Fact WHERE Timestamp BETWEEN '2024-11-01' AND '2024-11-23';
 ```
 
+### new data base
 
-### new data base 
+#### the query : new_db.sql
 
-#### the query : new_db.sql 
+#### insert
 
-#### insert 
 *run the query insert_data.sql*
+
+![data base image ](images/image.png)
