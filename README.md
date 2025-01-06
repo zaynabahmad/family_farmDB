@@ -59,3 +59,29 @@ SELECT * FROM Sensor_Reading_Fact WHERE Timestamp BETWEEN '2024-11-01' AND '2024
 *run the query insert_data.sql*
 
 ![data base image ](images/image.png)
+
+### Multi-Tenant Architecture
+
+**Multi-Tenant Architecture** refers to a software architecture where a single instance of a software application serves multiple clients (tenants). Each tenant operates in a shared environment, yet has isolated data and configurations, ensuring privacy and security while utilizing common resources.
+
+In this architecture, tenants can be individual users, groups, or organizations that access the same application, but their data, preferences, and settings remain separate from one another. This allows for efficient resource utilization while maintaining the customization and isolation that each tenant requires.
+
+#### Key Components of Multi-Tenant Architecture:
+
+1. **Tenants** :
+
+* A **tenant** represents a distinct user group or client within the system. Each tenant may include one or more users who share access to the application and its features.
+* Tenants can represent different organizations, teams, or individual clients, each with their own data and configuration settings.
+
+1. **Data Isolation** :
+
+* A core principle of multi-tenancy is the isolation of tenant data. Despite using the same application infrastructure, each tenant's data is kept private and secure, ensuring that one tenant cannot access or manipulate the data of another.
+* Data isolation is achieved through various architectural strategies such as using unique identifiers for each tenant or physically separating the data in different databases or tables.
+
+1. **Shared Resources** :
+
+* While each tenant's data is isolated, the underlying resources, such as servers, database engines, and application services, are shared among all tenants. This maximizes the efficiency of resource utilization and reduces operational costs.
+
+1. **Customizability** :
+
+* Tenants are typically allowed to customize certain features and settings within the shared environment. This can include preferences such as UI themes, branding, and specific configurations relevant to the tenant's use case.
