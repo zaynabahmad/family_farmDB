@@ -1,5 +1,5 @@
-CREATE DATABASE IF NOT EXISTS vertical_farm2;
-USE vertical_farm2;
+CREATE DATABASE IF NOT EXISTS USER1_db;
+USE USER1_db;
 
 
 CREATE TABLE IF NOT EXISTS Units (
@@ -27,27 +27,37 @@ CREATE TABLE IF NOT EXISTS Plates (
 
 
 CREATE TABLE Plants (
-    plant_id INT NOT NULL, -- يُدخل يدويًا
+    plant_id INT NOT NULL, 
     plant_name VARCHAR(255) NOT NULL,
-    age_in_weeks INT NOT NULL DEFAULT 0, -- عمر النبات بالأسابيع
+    age_in_weeks INT NOT NULL DEFAULT 0, 
     plate_id INT,
     harvested BOOLEAN DEFAULT FALSE,
     PRIMARY KEY (plant_id, age_in_weeks), 
     FOREIGN KEY (plate_id) REFERENCES Plates(plate_id) ON DELETE CASCADE
 );
 
+ALTER TABLE Plants ADD COLUMN harvest_timestamp DATETIME NULL;
+
+
 
 CREATE TABLE IF NOT EXISTS Desired_Conditions (
     condition_id INT AUTO_INCREMENT PRIMARY KEY,
     plant_id INT,
-    growth_stage INT NOT NULL,
-    temperature FLOAT NOT NULL,
-    humidity FLOAT NOT NULL,
+    growth_age_week INT NOT NULL,
+    light_time_day INT NOT NULL,
+    temperature_min FLOAT NOT NULL,
+    temperature_max FLOAT NOT NULL,
+    humidity_min FLOAT NOT NULL,
+    humidity_max FLOAT NOT NULL,
     red_light FLOAT NOT NULL,  
     blue_light FLOAT NOT NULL,  
-    far_red FLOAT NOT NULL,  
-    nutrient_level FLOAT NOT NULL,
-    ph FLOAT NOT NULL,  
+    far_red FLOAT NOT NULL,
+    air_flow VARCHAR(255) NOT NULL,
+    solution_level FLOAT NOT NULL,
+    ph_min FLOAT NOT NULL,
+    ph_max FLOAT NOT NULL,
+    ec_min FLOAT NOT NULL,
+    ec_max FLOAT NOT NULL,
     watering_frequency_per_day INT NOT NULL,  
     FOREIGN KEY (plant_id) REFERENCES Plants(plant_id) ON DELETE CASCADE
 );
@@ -61,28 +71,31 @@ CREATE TABLE IF NOT EXISTS Sensor_Readings (
     temperature FLOAT NOT NULL,
     humidity FLOAT NOT NULL,
     light_intensity FLOAT NOT NULL,
-    nutrient_level FLOAT NOT NULL,
+    red_light_intensity FLOAT ,
+    blue_light_intensity FLOAT ,
+    far_red_light_intensity FLOAT ,
+    air_flow_level FLOAT ,
+    CO2 FLOAT,
+    solution_level FLOAT NOT NULL,
     ph FLOAT NOT NULL,  
     ec FLOAT NOT NULL,  
     FOREIGN KEY (plate_id) REFERENCES Plates(plate_id) ON DELETE CASCADE
 );
 
-
-CREATE TABLE IF NOT EXISTS Actuators (
+-- state any change in any state -- 
+CREATE TABLE IF NOT EXISTS Actuators_feedback (
     actuator_id INT AUTO_INCREMENT PRIMARY KEY,
+    timestamp DATETIME NOT NULL,
     unit_id INT,
-    actuator_type VARCHAR(255) NOT NULL,  
-    start_time DATETIME NOT NULL,
-    end_time DATETIME,  
-    status VARCHAR(50) NOT NULL, 
+    actuator_type VARCHAR(255) NOT NULL,    
+    state VARCHAR(50) NOT NULL,  -- on or off -- 
     FOREIGN KEY (unit_id) REFERENCES Units(unit_id) ON DELETE CASCADE
 );
 
 
 CREATE TABLE IF NOT EXISTS Alerts (
     alert_id INT AUTO_INCREMENT PRIMARY KEY,
-    plate_id INT,
-    
+    plate_id INT,    
     message VARCHAR(255) NOT NULL,
     timestamp DATETIME NOT NULL,
     FOREIGN KEY (plate_id) REFERENCES Plates(plate_id) ON DELETE CASCADE
@@ -121,6 +134,17 @@ CREATE TABLE IF NOT EXISTS Historical_Data (
 
 ALTER TABLE Historical_Data MODIFY alerts TEXT;
 
+CREATE TABLE IF NOT EXISTS Plant_Quality (   -- insert feeh just harvested plants 
+    quality_id INT AUTO_INCREMENT PRIMARY KEY,
+    plant_id INT,
+    harvest_timestamp DATETIME ,
+    weight FLOAT ,  -- Weight of the plant in grams or kilograms
+    active_ingredient_level FLOAT,  -- Level of active ingredients (e.g., medicinal compounds)
+    visual_quality VARCHAR(255),  -- Description of visual quality (e.g., "Excellent", "Good", "Poor")
+    additional_notes TEXT,  -- Optional field for extra details about quality
+    FOREIGN KEY (plant_id) REFERENCES Plants(plant_id) ON DELETE CASCADE
+);
+
 
 -- ////////////////////////////////////-- 
 -- add trigger to the plant data to move to the historical data  --
@@ -130,14 +154,10 @@ CREATE TRIGGER after_plant_harvest
 AFTER UPDATE ON Plants
 FOR EACH ROW
 BEGIN
-    -- التحقق من إذا كانت القيمة المحدثة للحصاد هي TRUE
+    -- Check if the plant was just harvested
     IF NEW.harvested = TRUE AND OLD.harvested = FALSE THEN
 
-        -- إعداد طول النص المسموح به لدالة GROUP_CONCAT
-        SET SESSION group_concat_max_len = 10000;
-
-        -- إدراج البيانات في الجدول Historical_Data
-        -- still adding plant name 
+        -- Insert historical data for the harvested plant
         INSERT INTO Historical_Data (   
             plant_id, 
             plate_id, 
@@ -159,25 +179,44 @@ BEGIN
             sr.temperature, 
             sr.humidity, 
             sr.light_intensity, 
-            sr.nutrient_level, 
+            sr.solution_level, 
             sr.ph, 
             sr.ec, 
-            -- الحد من طول النصوص المدمجة باستخدام GROUP_CONCAT
+            -- Concatenate alerts and disease data
             (SELECT GROUP_CONCAT(a.message SEPARATOR '; ') FROM Alerts a WHERE a.plate_id = sr.plate_id) AS alerts,
             (SELECT GROUP_CONCAT(d.disease_name SEPARATOR '; ') FROM Disease_Detection_Results d WHERE d.plant_id = NEW.plant_id) AS diseases_detected,
             NEW.harvested
         FROM Sensor_Readings sr
         WHERE sr.plant_id = NEW.plant_id;
 
-        -- حذف البيانات المرتبطة بعد الحصاد
-        DELETE FROM Sensor_Readings WHERE plant_id = NEW.plant_id;
-        DELETE FROM Disease_Detection_Results WHERE plant_id = NEW.plant_id;
-        DELETE FROM Alerts WHERE plate_id IN (SELECT plate_id FROM Plates WHERE plate_id = NEW.plate_id);
+        -- Insert default quality record for the harvested plant
+        INSERT INTO Plant_Quality (
+            plant_id, 
+            harvest_timestamp, 
+            weight, 
+            visual_quality
+        )
+        VALUES (
+            NEW.plant_id, 
+            NOW(), -- Use the current timestamp
+            NULL,  -- Default value; can be updated later
+            NULL   -- Default value; can be updated later
+        );
 
+        -- Delete related sensor readings for the harvested plant
+        DELETE FROM Sensor_Readings WHERE plant_id = NEW.plant_id;
+
+        -- Delete disease detection results for the harvested plant
+        DELETE FROM Disease_Detection_Results WHERE plant_id = NEW.plant_id;
+
+        -- Delete alerts related to the plant's plate
+        DELETE FROM Alerts WHERE plate_id IN (SELECT plate_id FROM Plates WHERE plate_id = NEW.plate_id);
     END IF;
-END $$
+END$$
 
 DELIMITER ;
+
+
 
 -- lsa moshkelt eno msh b esave just ely had diseases not saved the others 
 
@@ -222,10 +261,6 @@ END$$
 
 DELIMITER ;
 
-
-
-
-
-
-
+ALTER TABLE Desired_Conditions
+ADD COLUMN predictive_yield FLOAT;
 

@@ -30,26 +30,11 @@ VALUES
 (1, 1, 'Plate 1', 1),
 (2, 1, 'Plate 2', 2);
 
+-- for updating weekly -- 
+-- UPDATE Plants 
+-- SET age_in_weeks = age_in_weeks + 1 
+-- WHERE harvested = FALSE;
 
-INSERT INTO Plants (plant_id, plant_name, growth_stage, plate_id)
-VALUES 
-(1, 'Lavender', 1, 1),   -- Growth stage at 1 week
-(2, 'Lavender', 2, 1),   -- Growth stage at 2 weeks
-(3, 'Lavender', 3, 1),   -- Growth stage at 3 weeks
-(4, 'Lavender', 4, 1),   -- Growth stage at 4 weeks
-(5, 'Lavender', 5, 1),   -- Growth stage at 5 weeks
-(6, 'Lavender', 6, 1),   -- Growth stage at 6 weeks
-(7, 'Lavender', 7, 1),   -- Growth stage at 7 weeks
-(8, 'Lavender', 8, 1),   -- Growth stage at 8 weeks
-(9, 'Sunflower', 0, 2),  -- Seedling stage at 0 weeks
-(10, 'Sunflower', 1, 2),  -- Growth stage at 1 week
-(11, 'Sunflower', 2, 2),  -- Growth stage at 2 weeks
-(12, 'Sunflower', 3, 2),  -- Growth stage at 3 weeks
-(13, 'Sunflower', 4, 2),  -- Growth stage at 4 weeks
-(14, 'Sunflower', 5, 2),  -- Growth stage at 5 weeks
-(15, 'Sunflower', 6, 2),  -- Growth stage at 6 weeks
-(16, 'Sunflower', 7, 2),  -- Growth stage at 7 weeks
-(17, 'Sunflower', 8, 2);  -- Growth stage at 8 weeks
 
 
 INSERT INTO Sensor_Readings (reading_id, plate_id,anomly_detection, timestamp, temperature, humidity, light_intensity, nutrient_level, ph, ec)
@@ -121,6 +106,81 @@ SELECT * FROM Sensor_Readings;
 SELECT * FROM Alerts;
 SELECT * FROM Actuators;
 SELECT * FROM Desired_Conditions;
+SELECT * FROM Disease_Detection_Results;
+
+
+
+-- //////////////////////////////////////////////////// -- 
+
+INSERT INTO Plants (plant_id, plant_name , age_in_weeks, plate_id, harvested)
+VALUES 
+(1, 'Lavender', 1, 1, FALSE),
+(1, 'Lavender', 2, 1, FALSE), -- نفس ID النبات لكن مرحلة نمو مختلفة
+(2, 'Rosemary', 1, 2, FALSE);
+
+
+
+INSERT INTO Sensor_Readings (plate_id, plant_id, timestamp, temperature, humidity, light_intensity, nutrient_level, ph, ec, anomly_detection) 
+VALUES 
+(1, 1, NOW(), 25.5, 65, 1200, 6.5, 6.8, 2.3, 0),
+(2, 2, NOW(), 22.0, 70, 1100, 5.8, 6.2, 2.1, 0);
+
+INSERT INTO Alerts (plate_id, message, timestamp) 
+VALUES 
+(1, 'Low humidity', NOW()),
+(2, 'High temperature', NOW());
+
+INSERT INTO Disease_Detection_Results (plant_id, disease_name, detection_timestamp) 
+VALUES 
+(1, 'Fungal infection', NOW()),
+(2, 'Bacterial wilt', NOW());
+
+SELECT @@sql_mode;
+SET GLOBAL sql_mode = REPLACE(@@sql_mode, 'ONLY_FULL_GROUP_BY', '');
+SELECT @@GLOBAL.sql_mode;
+
+
+
+UPDATE Plants 
+SET harvested = true 
+WHERE Plants.plant_id = 1;
+
+
+-- DROP TRIGGER IF EXISTS after_plant_harvest;
+
+
+SELECT * FROM Historical_Data;
+
+-- SET FOREIGN_KEY_CHECKS = 0;
+
+-- DROP TABLE IF EXISTS Plants;
+
+-- SET FOREIGN_KEY_CHECKS = 1;
+
+
+
+
+DESCRIBE Plants;
+
+SELECT * FROM Plants WHERE plant_id = 1;
+SELECT * FROM Plants WHERE harvested = FALSE;
+
+
+
+
+
+
+
+
+
+
+
+-- INSERT INTO Disease_Detection_Results (plant_id, disease_name ,detection_timestamp) 
+-- VALUES 
+-- (1, 'Powdery Mildew',NOW()), 
+-- (2, '' ,NOW()); -- السطر الثاني سيجعل `disease_detected` = FALSE
+
+
 
 
 
