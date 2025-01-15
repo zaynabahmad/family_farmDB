@@ -153,3 +153,9 @@ INSERT INTO Plants (plant_id, plant_name, age_in_weeks, plate_id, harvested) VAL
 UPDATE Plants 
 SET harvested = true , harvest_timestamp = NOW() 
 WHERE Plants.plant_id = 1;
+
+
+INSERT INTO Plant_Quality (plant_id, harvest_timestamp, weight, active_ingredient_level, visual_quality, additional_notes) VALUES
+(1, '2025-01-05 10:00:00', 2.5, 85.3, 'Excellent', 'No visible defects; vibrant green color'),
+(1, '2025-02-10 14:30:00', 2.8, 80.0, 'Good', 'Minor discoloration on edges');
+
