@@ -1,3 +1,26 @@
+-- ===========================================================
+-- Project: Smart Plant Growth Monitoring & Optimization System
+-- Description:
+-- This database schema is designed for a smart hydroponic vertical 
+-- farming system that monitors, controls, and optimizes the 
+-- environmental conditions for plant growth using sensor data, 
+-- actuator feedback, disease detection, and harvest tracking.
+--
+-- Key Features:
+-- - Tracks units, plates, and planting methods across multiple systems.
+-- - Associates individual plants with plates, including their age and harvest status.
+-- - Stores desired environmental conditions for each plant stage.
+-- - Collects real-time sensor readings to monitor environmental factors.
+-- - Logs actuator states and system feedback for control traceability.
+-- - Records disease detection results via computer vision models.
+-- - Archives historical environmental data and plant status post-harvest.
+-- - Maintains plant quality records after harvesting for further analysis.
+-- - Utilizes triggers to automate data logging and cleanup operations.
+--
+-- The complete project logic and documentation will be provided in the
+-- accompanying Markdown (.md) file.
+-- note that this schema is for just one user each user will have the same schema 
+-- ===========================================================
 CREATE DATABASE IF NOT EXISTS USER1_db;
 USE USER1_db;
 
@@ -25,7 +48,7 @@ CREATE TABLE IF NOT EXISTS Plates (
 );
 
 
-
+-- specific plants in specific plates 
 CREATE TABLE Plants (
     plant_id INT NOT NULL, 
     plant_name VARCHAR(255) NOT NULL,
@@ -39,7 +62,7 @@ CREATE TABLE Plants (
 ALTER TABLE Plants ADD COLUMN harvest_timestamp DATETIME NULL;
 
 
-
+-- conditions for the plant to adjust the environment for each plant in every stage 
 CREATE TABLE IF NOT EXISTS Desired_Conditions (
     condition_id INT AUTO_INCREMENT PRIMARY KEY,
     plant_id INT,
@@ -62,7 +85,7 @@ CREATE TABLE IF NOT EXISTS Desired_Conditions (
     FOREIGN KEY (plant_id) REFERENCES Plants(plant_id) ON DELETE CASCADE
 );
 
-
+-- observiations from the environment for a specific plate which has a specific plant 
 CREATE TABLE IF NOT EXISTS Sensor_Readings (
     reading_id INT AUTO_INCREMENT PRIMARY KEY,
     plate_id INT,
@@ -92,7 +115,7 @@ CREATE TABLE IF NOT EXISTS Actuators_feedback (
     FOREIGN KEY (unit_id) REFERENCES Units(unit_id) ON DELETE CASCADE
 );
 
-
+-- alerts get to display on the dashboard (for each plate ) 
 CREATE TABLE IF NOT EXISTS Alerts (
     alert_id INT AUTO_INCREMENT PRIMARY KEY,
     plate_id INT,    
@@ -103,17 +126,21 @@ CREATE TABLE IF NOT EXISTS Alerts (
 );
 
 
-
+-- results get from the computer vision model to detect the diseases in the plants 
 CREATE TABLE IF NOT EXISTS Disease_Detection_Results (
     detection_id INT AUTO_INCREMENT PRIMARY KEY,
     plant_id INT,
     detection_timestamp DATETIME NOT NULL,
-    disease_detected BOOLEAN NOT NULL,
+    disease_detected BOOLEAN NOT NULL,  -- if true there is a disease and false is healthy 
     disease_name VARCHAR(255),
     FOREIGN KEY (plant_id) REFERENCES Plants(plant_id) ON DELETE CASCADE
 );
 
 
+-- to save the data temporary in this table before move this data to the database for training 
+-- save just the harvest data 
+-- envrionment coditions and the output 
+-- (to be add biomass after finishing the RL model )
 CREATE TABLE IF NOT EXISTS Historical_Data (
     historical_data_id INT AUTO_INCREMENT PRIMARY KEY,
     plant_id INT,
@@ -263,4 +290,27 @@ DELIMITER ;
 
 ALTER TABLE Desired_Conditions
 ADD COLUMN predictive_yield FLOAT;
+
+DELIMITER $$
+
+CREATE TRIGGER after_plant_harvest
+AFTER UPDATE ON Plants
+FOR EACH ROW
+BEGIN
+    
+    IF NEW.harvested = TRUE AND OLD.harvested = FALSE THEN
+        
+        DECLARE plate_id INT;
+
+	
+        SELECT plate_id INTO plate_id
+        FROM Plates
+        WHERE plate_id = (SELECT plate_id FROM Plants WHERE plant_id = NEW.plant_id);
+
+        
+        DELETE FROM Plants WHERE plate_id = plate_id;
+    END IF;
+END$$
+
+DELIMITER ;
 

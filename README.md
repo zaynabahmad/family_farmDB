@@ -1,87 +1,158 @@
-# family_farmDB
+# 🌿 Smart Plant Growth Monitoring & Optimization System Database Schema
 
-## Prerequisites
+This document provides a comprehensive explanation of the **Smart Hydroponic Vertical Farming System** database schema. It is designed to manage, monitor, and optimize medical plant growth conditions using real-time sensor data, computer vision models, and actuator control feedback. This database ensures traceability, historical analysis, and support for reinforcement learning (RL)-based optimization.
 
-Before you can use this database, ensure you have the following:
+---
 
-- **MySQL** installed (preferably MySQL 8.0 or above).
-- **MySQL Workbench** installed for easier model visualization and management (optional but recommended).
+##  Overview
 
-## Database Setup
+This database schema is created **per user**, i.e., each user has a separate database with this exact structure.
 
-### 1. Clone the Repository
+**Project Goals:**
 
-If you haven’t already cloned the repository, run the following command:
+- Enable precise environmental control for hydroponic vertical farms.
+- Facilitate disease detection via vision models.
+- Optimize plant growth through historical data analysis and ML/RL models.
+- Track harvesting and plant quality for feedback loops.
+
+---
+
+##  Key Tables & Purposes
+
+### 🔹 `Units`
+
+Stores metadata about farming units (unit id , location , etc ).
+
+### 🔹 `Planting_Methods`
+
+Describes the techniques used for planting
+
+### 🔹 `Plates`
+
+Represents growing trays associated with a unit and a planting method.
+
+### 🔹 `Plants`
+
+Tracks plant types and growth status within plates. It includes `harvested` flags and timestamp logs for harvesting.
+
+### 🔹 `Desired_Conditions`
+
+Stores optimal environmental parameters for each plant at specific growth stages (weekly).
+
+Includes:
+
+- Light schedule & spectrum
+- Temperature & humidity ranges
+- pH & EC thresholds
+- Airflow and nutrient solution requirements
+
+Also contains `predictive_yield`, used for yield forecasting models.
+
+### 🔹 `Sensor_Readings`
+
+Logs real-time sensor measurements per plant and plate, including:
+
+- Temperature
+- Humidity
+- CO₂
+- pH / EC
+- Light spectrums
+- Nutrient levels
+
+Supports anomaly detection and traceability. ( will be working on )
+
+### 🔹 `Actuators_feedback`
+
+Logs state changes (ON/OFF) of environmental control components (lights, fans, pumps, etc.).
+
+### 🔹 `Alerts`
+
+Contains messages to be shown on the dashboard when conditions deviate from desired ranges.
+
+### 🔹 `Disease_Detection_Results`
+
+Stores results from CV models for disease detection (e.g., Septoria, Botrytis).
+
+### 🔹 `Historical_Data`
+
+Records all plant and environment data after harvest, including:
+
+- Conditions during growth
+- Alerts & diseases
+- Status (harvested or not)
+
+Used for offline training, analytics, and RL simulation.
+
+### 🔹 `Plant_Quality`
+
+Captures post-harvest evaluation:
+
+- Weight
+- Active ingredients
+- Visual quality
+- Notes
+
+---
+
+## 🔁 Triggers (Automation)
+
+### ✅ `after_plant_harvest`
+
+Triggered when a plant is marked as harvested:
+
+- Moves data to `Historical_Data`
+- Logs default `Plant_Quality`
+- Deletes sensor data, alerts, and disease results
+- Deletes the plant from `Plants` to clean the active workspace
+
+### ✅ `before_insert_disease_detection` & `before_update_disease_detection`
+
+Automatically set `disease_detected = TRUE` if a disease name is present.
+
+---
+
+## ⚙️ How to Use
+
+### 🔧 1. Create the Database
+
+Run the main schema file (for example `create_user1.sql`) in your MySQL server:
 
 ```bash
-git clone https://github.com/zaynabahmad/family_farmDB.git
-cd family_farmDB
+mysql -u your_user -p < create_user1.sql
+
 ```
 
-### 2. database import
+ this will create a database for user1  
+> the main schema for all users
+
+### how it is going 
+for each new user register in the application it it will store his data in usersDB which have 
+
+username , password , database_name (will be auto generated with his name ) , DBUser, DBHost , DBPassword (auto generated ),email and the time it register in 
+
+after this it will create for him a database with the main schema 
+
+### to try test some data 
+```bash
+mysql -u your_user -p < create_userdb.sql
+
+```
+will create the database for the users 
 
 ```bash
-mysql -u root -p FamilyFarmDB < family_farmdb.sql
+mysql -u your_user -p < final_db_ec2.sql
+
 ```
 
-* Replace root with your MySQL username if it's different.
-* Enter your MySQL password when prompted.
+will create a database for a user1 
 
-### 3. to show the DataBase
+```bash
+mysql -u your_user -p < insert_data.sql
 
-```sql
-SHOW TABLES;
 ```
+will insert some data in the database 
 
-#### 4. adding data example
 
-```sql
-INSERT INTO Sensor_Reading_Fact (
-    Sensor_Reading_ID, Sensor_ID, Reading_Value, Timestamp, Sensor_Type,
-    Anomaly_Label, Alarm_Level, Condition_ID, Plant_ID, Unit_ID
-) VALUES (
-    1, 101, 23.5, '2024-11-23 12:00:00', 'Temperature', FALSE, 'Low', 2, 10, 3
-);
-```
 
-### 5. some querying examples
 
-```sql
-SELECT * FROM Sensor_Reading_Fact WHERE Timestamp BETWEEN '2024-11-01' AND '2024-11-23';
-```
 
-### new data base
-
-#### the query : new_db.sql
-
-#### insert
-
-*run the query insert_data.sql*
-
-![data base image ](images/image.png)
-
-### Multi-Tenant Architecture
-
-**Multi-Tenant Architecture** refers to a software architecture where a single instance of a software application serves multiple clients (tenants). Each tenant operates in a shared environment, yet has isolated data and configurations, ensuring privacy and security while utilizing common resources.
-
-In this architecture, tenants can be individual users, groups, or organizations that access the same application, but their data, preferences, and settings remain separate from one another. This allows for efficient resource utilization while maintaining the customization and isolation that each tenant requires.
-
-#### Key Components of Multi-Tenant Architecture:
-
-1. **Tenants** :
-
-* A **tenant** represents a distinct user group or client within the system. Each tenant may include one or more users who share access to the application and its features.
-* Tenants can represent different organizations, teams, or individual clients, each with their own data and configuration settings.
-
-1. **Data Isolation** :
-
-* A core principle of multi-tenancy is the isolation of tenant data. Despite using the same application infrastructure, each tenant's data is kept private and secure, ensuring that one tenant cannot access or manipulate the data of another.
-* Data isolation is achieved through various architectural strategies such as using unique identifiers for each tenant or physically separating the data in different databases or tables.
-
-1. **Shared Resources** :
-
-* While each tenant's data is isolated, the underlying resources, such as servers, database engines, and application services, are shared among all tenants. This maximizes the efficiency of resource utilization and reduces operational costs.
-
-1. **Customizability** :
-
-* Tenants are typically allowed to customize certain features and settings within the shared environment. This can include preferences such as UI themes, branding, and specific configurations relevant to the tenant's use case.
