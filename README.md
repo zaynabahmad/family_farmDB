@@ -1,6 +1,6 @@
 # 🌿 Smart MPlant Growth Monitoring & Optimization System Database Schema
 
-This document provides a comprehensive explanation of the **Smart Hydroponic Vertical Farming System** database schema. It is designed to manage, monitor, and optimize medical plant growth conditions using real-time sensor data, computer vision models, and actuator control feedback. This database ensures traceability, historical analysis, and support for reinforcement learning (RL)-based optimization.
+**Smart Hydroponic Vertical Farming System** database schema. It is designed to manage, monitor, and optimize medical plant growth conditions using real-time sensor data, computer vision models, and actuator control feedback. This database ensures traceability, historical analysis, and support for reinforcement learning (RL)-based optimization.
 
 ---
 
