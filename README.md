@@ -1,10 +1,10 @@
-# 🌿 Smart Plant Growth Monitoring & Optimization System Database Schema
+# 🌿 Smart MPlant Growth Monitoring & Optimization System Database Schema
 
 This document provides a comprehensive explanation of the **Smart Hydroponic Vertical Farming System** database schema. It is designed to manage, monitor, and optimize medical plant growth conditions using real-time sensor data, computer vision models, and actuator control feedback. This database ensures traceability, historical analysis, and support for reinforcement learning (RL)-based optimization.
 
 ---
 
-##  Overview
+## Overview
 
 This database schema is created **per user**, i.e., each user has a separate database with this exact structure.
 
@@ -17,7 +17,7 @@ This database schema is created **per user**, i.e., each user has a separate dat
 
 ---
 
-##  Key Tables & Purposes
+## Key Tables & Purposes
 
 ### 🔹 `Units`
 
@@ -122,37 +122,37 @@ mysql -u your_user -p < create_user1.sql
 
 ```
 
- this will create a database for user1  
+ this will create a database for user1
+
 > the main schema for all users
 
-### how it is going 
-for each new user register in the application it it will store his data in usersDB which have 
+### how it is going
 
-username , password , database_name (will be auto generated with his name ) , DBUser, DBHost , DBPassword (auto generated ),email and the time it register in 
+for each new user register in the application it it will store his data in usersDB which have
 
-after this it will create for him a database with the main schema 
+username , password , database_name (will be auto generated with his name ) , DBUser, DBHost , DBPassword (auto generated ),email and the time it register in
 
-### to try test some data 
+after this it will create for him a database with the main schema
+
+### to try test some data
+
 ```bash
 mysql -u your_user -p < create_userdb.sql
 
 ```
-will create the database for the users 
+
+will create the database for the users
 
 ```bash
 mysql -u your_user -p < final_db_ec2.sql
 
 ```
 
-will create a database for a user1 
+will create a database for a user1
 
 ```bash
 mysql -u your_user -p < insert_data.sql
 
 ```
-will insert some data in the database 
 
-
-
-
-
+will insert some data in the database
