@@ -115,10 +115,10 @@ Automatically set `disease_detected = TRUE` if a disease name is present.
 
 ### 🔧 1. Create the Database
 
-Run the main schema file (for example `create_user1.sql`) in your MySQL server:
+Run the main schema file in your MySQL server:
 
 ```bash
-mysql -u your_user -p < create_user1.sql
+mysql -u your_user -p < final_db_ec2.sql
 
 ```
 
@@ -137,7 +137,7 @@ after this it will create for him a database with the main schema
 ### to try test some data
 
 ```bash
-mysql -u your_user -p < create_userdb.sql
+mysql -u your_user -p < create_usersdb.sql
 
 ```
 
